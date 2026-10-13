@@ -1,0 +1,186 @@
+/* Estilos generales */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f0f4f8;
+    color: #333;
+}
+
+/* Header */
+header {
+    background: linear-gradient(90deg, #0077b6, #00b4d8);
+    color: #fff;
+    text-align: center;
+    padding: 20px 10px;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+}
+
+header h2 {
+    margin: 5px 0 15px;
+    font-weight: 300;
+}
+
+/* Botones del menú */
+nav {
+    margin-top: 10px;
+}
+
+nav .btn {
+    display: inline-block;
+    margin: 5px;
+    padding: 8px 15px;
+    background: #fff;
+    color: #0077b6;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+nav .btn:hover {
+    background: #0096c7;
+    color: #fff;
+}
+
+/* Tarjetas */
+.card {
+    background: #fff;
+    margin: 20px auto;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 900px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h2 {
+    color: #023e8a;
+    margin-bottom: 15px;
+}
+
+/* Técnica del color */
+.rojo {
+    color: #d62828;
+    font-weight: bold;
+}
+.verde {
+    color: #2a9d8f;
+    font-weight: bold;
+}
+.amarillo {
+    color: #f4a261;
+    font-weight: bold;
+}
+
+/* ODS */
+.ods {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.ods span {
+    background: #e0f7fa;
+    color: #0077b6;
+    padding: 8px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Badges para rangos */
+.badges {
+    margin-top: 15px;
+}
+
+.badge {
+    display: inline-block;
+    background: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 15px;
+    margin: 5px;
+    font-weight: bold;
+}
+
+/* Botón primario */
+.btn-primary {
+    display: inline-block;
+    margin-top: 15px;
+    padding: 10px 18px;
+    background: #0077b6;
+    color: #fff;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+}
+
+.btn-primary:hover {
+    background: #023e8a;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    background: #0077b6;
+    color: white;
+    padding: 10px 0;
+    margin-top: 20px;
+}
+
+
+/* Footer */
+footer {
+    text-align: center;
+    background: #0077b6;
+    color: white;
+    padding: 10px 0;
+    margin-top: 20px;
+}
+
+/* --- Técnica del color: subrayado por partes (A: problema, B: causa, C: efecto) --- */
+
+.planteamiento {
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: #2d3748;
+}
+
+.underline {
+    display: inline-block;
+    padding-bottom: 6px;
+    border-bottom-width: 4px;
+    border-bottom-style: solid;
+    border-radius: 3px;
+}
+
+.rojo-underline {
+    border-bottom-color: #d62828;
+    background: rgba(214,40,40,0.03);
+}
+
+.verde-underline {
+    border-bottom-color: #2a9d8f;
+    background: rgba(42,157,143,0.03);
+}
+
+.amarillo-underline {
+    border-bottom-color: #f4a261;
+    background: rgba(244,162,97,0.03);
+}
+
+/* Responsive */
+@media (max-width: 520px) {
+    .planteamiento {
+        font-size: 1rem;
+    }
+    .underline {
+        padding-bottom: 4px;
+        border-bottom-width: 3px;
+    }
+}
