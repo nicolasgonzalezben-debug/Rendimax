@@ -35,15 +35,14 @@ if (isset($_GET["error"])) {
 
   <a href="index.html" class="btn-volver-index">← Volver al inicio</a>
 
-  <div class="auth-logo">
-    <img src="img/logo-rendimax.png" alt="RendiMAX">
+  <div class="auth-logo"> 
     <span>Rendi<b>MAX</b></span>
   </div>
+  
 
   <div class="auth-card">
 
     <div class="auth-panel-izq">
-      <span class="badge">Salud, fuerza y motivación</span>
       <h2>Impulsa tu cuerpo y<br>enfoca tu mente</h2>
       <p>
         Este espacio está pensado para que cada paso cuente: organiza

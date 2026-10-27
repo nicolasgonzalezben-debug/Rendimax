@@ -4,19 +4,11 @@ exigirRol(["docente", "administrador"]);
 $seccion_activa = "alimentacion";
 
 $mi_id    = (int)$_SESSION["id_usuario"];
-$es_admin = esAdministrador(); // true = puede ver/tocar todo, incluso planes generales
-
+$es_admin = esAdministrador(); 
 $error = ""; $exito = "";
 $sugerido_calorias = null; $sugerido_descripcion = "";
 
-// -----------------------------------------------------------------
-// Lista de estudiantes que este usuario puede usar en los <select>:
-// - administrador: todos los estudiantes.
-// - docente: SOLO los de los grados que tiene autorizados en
-//   asignacion_docente (todo el grupo, no estudiante por estudiante).
-// Esta lista también sirve para validar en el servidor (más abajo)
-// que un docente no intente guardar un plan para alguien que no es suyo.
-// -----------------------------------------------------------------
+
 if ($es_admin) {
     $estudiantes = mysqli_query($conexion, "SELECT id_usuario, nombre FROM usuario WHERE rol='estudiante' ORDER BY nombre");
 } else {
@@ -27,9 +19,7 @@ mysqli_data_seek($estudiantes, 0);
 while ($e = mysqli_fetch_assoc($estudiantes)) { $ids_permitidos[] = (int)$e["id_usuario"]; }
 mysqli_data_seek($estudiantes, 0);
 
-// -----------------------------------------------------------------
-// Helper: calcula calorías sugeridas + descripción según el perfil
-// -----------------------------------------------------------------
+
 function generar_plan($sexo, $edad, $estatura, $peso, $objetivo) {
     $edad = (int)$edad; $estatura = (float)$estatura; $peso = (float)$peso;
     if ($sexo === "Masculino") {
@@ -37,9 +27,9 @@ function generar_plan($sexo, $edad, $estatura, $peso, $objetivo) {
     } elseif ($sexo === "Femenino") {
         $bmr = 10*$peso + 6.25*$estatura - 5*$edad - 161;
     } else {
-        $bmr = 10*$peso + 6.25*$estatura - 5*$edad - 78; // promedio
+        $bmr = 10*$peso + 6.25*$estatura - 5*$edad - 78; 
     }
-    $tdee = $bmr * 1.55; // actividad moderada (estudiante que entrena)
+    $tdee = $bmr * 1.55; 
 
     $plantillas = [
         "Bajar de peso" => [
@@ -86,8 +76,7 @@ function generar_plan($sexo, $edad, $estatura, $peso, $objetivo) {
     $calorias = (int) (round(($tdee + $plantilla["ajuste"]) / 50) * 50);
     $calorias = max($calorias, 1200);
 
-    // Macros aproximados: proteína por kg de peso, grasa como % de las
-    // calorías totales, y el resto (lo que sobra) en carbohidratos.
+
     $proteina_g = round($peso * $plantilla["proteina_g_kg"]);
     $grasa_g    = round(($calorias * $plantilla["grasa_pct"]) / 9);
     $carbos_g   = max(0, round(($calorias - ($proteina_g * 4) - ($grasa_g * 9)) / 4));
@@ -103,9 +92,7 @@ function generar_plan($sexo, $edad, $estatura, $peso, $objetivo) {
     return [$calorias, $descripcion];
 }
 
-// -----------------------------------------------------------------
-// GENERAR SUGERENCIA (no guarda todavía, solo llena el formulario)
-// -----------------------------------------------------------------
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["generar"])) {
     $id_usuario_gen = $_POST["id_usuario"] ?? "";
     $objetivo_gen   = $_POST["objetivo"] ?? "Mantenimiento";
@@ -118,12 +105,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["generar"])) {
             [$sugerido_calorias, $sugerido_descripcion] = generar_plan($perfil["sexo"], $perfil["edad"], $perfil["estatura"], $perfil["peso"], $objetivo_gen);
         }
     }
-    $_POST["objetivo"] = $objetivo_gen; // mantener seleccionado en el form
+    $_POST["objetivo"] = $objetivo_gen; 
 }
 
-// -----------------------------------------------------------------
-// CREAR / ACTUALIZAR (guardado real)
-// -----------------------------------------------------------------
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_POST["generar"])) {
     $id_plan       = $_POST["id_plan"] ?? "";
     $nombre_plan   = trim($_POST["nombre_plan"] ?? "");
@@ -134,9 +119,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_POST["generar"])) {
     $id_usuario_db = $id_usuario === "" ? null : (int)$id_usuario;
     $auto          = isset($_POST["fue_generado"]) ? 1 : 0;
 
-    // Un docente NUNCA puede crear un plan "General" (id_usuario NULL)
-    // ni asignarlo a un estudiante que no sea suyo. Se revisa aquí en
-    // el servidor, sin importar lo que el HTML haya mostrado.
+
     $propietario_valido = $es_admin || ($id_usuario_db !== null && in_array($id_usuario_db, $ids_permitidos, true));
 
     if ($nombre_plan === "" || $calorias === "") {

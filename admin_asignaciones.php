@@ -4,21 +4,15 @@ exigirRol("administrador");
 $seccion_activa = "asignaciones";
 
 $error = ""; $exito = "";
-$GRADOS = [6 => "Sexto", 7 => "Séptimo", 8 => "Octavo", 9 => "Noveno", 10 => "Décimo", 11 => "Once"];
+$GRADOS = [8 => "Octavo", 9 => "Noveno", 10 => "Décimo", 11 => "Once"];
 
-// -----------------------------------------------------------------
-// Guardar asignación: un docente + una lista de grados (checkboxes).
-// Se reemplaza TODO lo que tenía asignado ese docente por la lista
-// nueva que llegó marcada (así se puede agregar y quitar grados
-// desde el mismo formulario, sin una pantalla aparte para "quitar").
-// -----------------------------------------------------------------
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["accion"] ?? "") === "asignar") {
     $id_docente = (int)($_POST["id_docente"] ?? 0);
     $grados_marcados = $_POST["grados"] ?? [];
     $grados_validos = array_values(array_intersect(array_map("intval", $grados_marcados), array_keys($GRADOS)));
 
-    // Verificamos en el servidor que ese id realmente sea un docente
-    // (nunca confiamos en lo que venga del <select> del navegador).
+
     $verifica = mysqli_prepare($conexion, "SELECT id_usuario FROM usuario WHERE id_usuario=? AND rol='docente'");
     mysqli_stmt_bind_param($verifica, "i", $id_docente);
     mysqli_stmt_execute($verifica);
@@ -46,14 +40,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && ($_POST["accion"] ?? "") === "asign
 
 $docentes = mysqli_query($conexion, "SELECT id_usuario, nombre FROM usuario WHERE rol='docente' ORDER BY nombre");
 
-// Grados ya asignados a cada docente, para pintar los checkboxes y la tabla resumen
-$mapa_asignaciones = []; // id_docente => [grado, grado, ...]
+$mapa_asignaciones = [];
 $res = mysqli_query($conexion, "SELECT id_docente, grado FROM asignacion_docente ORDER BY grado");
 while ($fila = mysqli_fetch_assoc($res)) {
     $mapa_asignaciones[$fila["id_docente"]][] = (int)$fila["grado"];
 }
 
-// Cuántos estudiantes hay realmente en cada grado (para que el admin vea el impacto real)
 $conteo_por_grado = array_fill_keys(array_keys($GRADOS), 0);
 $res2 = mysqli_query($conexion, "SELECT grado, COUNT(*) AS n FROM perfil p JOIN usuario u ON u.id_usuario=p.id_usuario WHERE u.rol='estudiante' AND grado IS NOT NULL GROUP BY grado");
 while ($fila = mysqli_fetch_assoc($res2)) { $conteo_por_grado[(int)$fila["grado"]] = (int)$fila["n"]; }
@@ -134,15 +126,12 @@ $grados_del_editado = $docente_editar ? ($mapa_asignaciones[$docente_editar] ?? 
                 $grados_d = $mapa_asignaciones[$d["id_usuario"]] ?? [];
                 sort($grados_d);
                 $total_estudiantes = 0;
-foreach ($grados_d as $g) {
-    $total_estudiantes += $conteo_por_grado[$g] ?? 0;
-}            ?>
+                foreach ($grados_d as $g) { $total_estudiantes += $conteo_por_grado[$g]; }
+            ?>
               <tr>
                 <td><?= htmlspecialchars($d["nombre"]) ?></td>
                 <td><?php if (empty($grados_d)): ?><span class="pill gris">Sin grados asignados</span>
-<?php else: foreach ($grados_d as $g): ?>
-    <span class="pill"><?= $GRADOS[$g] ?? $g ?></span>
-<?php endforeach; endif; ?></td>
+                    <?php else: foreach ($grados_d as $g): ?><span class="pill"><?= $GRADOS[$g] ?></span> <?php endforeach; endif; ?></td>
                 <td><?= $total_estudiantes ?></td>
                 <td class="acciones-tabla">
                   <a class="editar" href="admin_asignaciones.php?editar=<?= $d['id_usuario'] ?>">Editar</a>

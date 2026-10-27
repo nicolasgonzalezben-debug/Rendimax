@@ -1,24 +1,5 @@
 <?php
-/**
- * funciones.php
- * -----------------------------------------------------------------
- * Aquí vive TODO el control de acceso del sistema. Ninguna página
- * debe decidir por su cuenta si un usuario puede entrar o no:
- * siempre llama a estas funciones.
- *
- * Regla de oro: nunca confiamos en $_POST, $_GET, cookies ni nada
- * que venga del navegador para saber el rol de alguien. El rol
- * SOLO sale de $_SESSION["rol"], que el propio servidor escribió
- * en procesar_login.php justo después de validar la contraseña
- * contra la base de datos.
- * -----------------------------------------------------------------
- */
 
-/**
- * verificarSesion()
- * Comprueba que haya alguien logueado. Si no, lo manda al login.
- * Úsala al principio de CUALQUIER página que requiera estar logueado.
- */
 function verificarSesion() {
     if (!isset($_SESSION["id_usuario"])) {
         header("Location: iniciarsesion.php?error=sesion");
@@ -26,15 +7,7 @@ function verificarSesion() {
     }
 }
 
-/**
- * exigirRol($rolesPermitidos)
- * Comprueba sesión Y que el rol del usuario esté en la lista permitida.
- * Si no cumple, lo regresa al dashboard con un aviso.
- *
- * Ejemplos:
- *   exigirRol("administrador");
- *   exigirRol(["docente", "administrador"]);
- */
+
 function exigirRol($rolesPermitidos) {
     verificarSesion();
 
@@ -55,16 +28,7 @@ function esAdministrador() { return ($_SESSION["rol"] ?? "") === "administrador"
 function esDocente()       { return ($_SESSION["rol"] ?? "") === "docente"; }
 function esEstudiante()    { return ($_SESSION["rol"] ?? "") === "estudiante"; }
 
-/**
- * esDocenteDeEstudiante()
- * Un docente NO puede ver a cualquier estudiante: solo a los de los
- * GRADOS que un administrador le autorizó en asignacion_docente
- * (por ejemplo, un docente de "octavo a décimo" tiene autorizados
- * los grados 8, 9 y 10). Un estudiante es "suyo" si el grado guardado
- * en perfil.grado coincide con alguno de esos grados autorizados.
- * Esta función responde true/false consultando la base de datos
- * (con consulta preparada).
- */
+
 function esDocenteDeEstudiante($conexion, $idDocente, $idEstudiante) {
     $stmt = mysqli_prepare($conexion,
         "SELECT 1 FROM asignacion_docente ad
@@ -76,12 +40,7 @@ function esDocenteDeEstudiante($conexion, $idDocente, $idEstudiante) {
     return mysqli_stmt_num_rows($stmt) > 0;
 }
 
-/**
- * rangosRacha()
- * Única fuente de verdad para los rangos de la mascota (nombre, días
- * necesarios e imagen). Antes esta lista estaba copiada y pegada en
- * cada página que la necesitaba; ahora vive en un solo lugar.
- */
+
 function rangosRacha() {
     return [
         ["nombre" => "Bronce",   "meta" => 1,   "img" => "bronce"],
@@ -94,7 +53,6 @@ function rangosRacha() {
     ];
 }
 
-/** Dado un número de días, devuelve el nombre del rango que le corresponde. */
 function nivelParaDias($dias) {
     $nivel = "Bronce";
     foreach (rangosRacha() as $r) {
@@ -103,21 +61,7 @@ function nivelParaDias($dias) {
     return $nivel;
 }
 
-/**
- * actualizarRacha()
- * El corazón del sistema de rachas: lo llama mi_progreso.php cada vez
- * que un estudiante registra su progreso del DÍA DE HOY (no cuenta si
- * registra una fecha pasada — eso evitaría poder "inflar" la racha).
- *
- * Reglas, basadas en la fecha de la ÚLTIMA vez que se registró algo
- * (fecha_ultima):
- *   - Si ya había registrado algo HOY: no cambia nada (para no sumar
- *     dos veces el mismo día si edita o crea varios registros).
- *   - Si la última vez fue AYER: la racha sigue, +1 día.
- *   - Si la última vez fue antes de ayer (o nunca): la racha se perdió
- *     y vuelve a empezar en 1.
- * Al final recalcula el rango (nivel_personaje) según los días nuevos.
- */
+
 function actualizarRacha($conexion, $idUsuario) {
     $hoy  = date("Y-m-d");
     $ayer = date("Y-m-d", strtotime("-1 day"));
@@ -128,8 +72,6 @@ function actualizarRacha($conexion, $idUsuario) {
     $racha = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 
     if (!$racha) {
-        // No debería pasar (se crea en el registro), pero por seguridad
-        // creamos la fila si faltara.
         $stmt = mysqli_prepare($conexion, "INSERT INTO racha (dias_consecutivos, fecha_inicio, fecha_ultima, nivel_personaje, id_usuario) VALUES (0, NULL, NULL, 'Bronce', ?)");
         mysqli_stmt_bind_param($stmt, "i", $idUsuario);
         mysqli_stmt_execute($stmt);
@@ -139,7 +81,7 @@ function actualizarRacha($conexion, $idUsuario) {
     $fechaUltima = $racha["fecha_ultima"];
 
     if ($fechaUltima === $hoy) {
-        return; // ya contaba hoy, no se toca nada
+        return; 
     }
 
     if ($fechaUltima === $ayer) {
@@ -156,13 +98,7 @@ function actualizarRacha($conexion, $idUsuario) {
     mysqli_stmt_execute($stmt);
 }
 
-/**
- * estudiantesDeDocente()
- * Devuelve (como mysqli_result) todos los estudiantes que están en
- * algún grado autorizado para este docente. Se usa para armar los
- * <select> y para calcular $ids_permitidos en los módulos de
- * Alimentación, Rutinas y Monitoreo.
- */
+
 function estudiantesDeDocente($conexion, $idDocente) {
     $stmt = mysqli_prepare($conexion, "
         SELECT DISTINCT u.id_usuario, u.nombre, p.grado

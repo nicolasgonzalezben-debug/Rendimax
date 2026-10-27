@@ -15,17 +15,7 @@ $hoy  = date("Y-m-d");
 $ayer = date("Y-m-d", strtotime("-1 day"));
 $fecha_ultima = $mi_racha["fecha_ultima"];
 
-// -------------------------------------------------------------
-// La racha guardada en la base de datos solo se actualiza cuando el
-// estudiante registra progreso (ver funciones.php -> actualizarRacha()).
-// Aquí, para MOSTRARLA, calculamos el estado real sin esperar a que
-// vuelva a registrar algo:
-//   - "al_dia":    ya registró hoy, la racha sigue intacta.
-//   - "en_riesgo": registró ayer pero todavía no hoy — si no registra
-//                  hoy, mañana se reinicia.
-//   - "perdida":   pasó más de un día sin registrar — se rompió.
-//   - "sin_empezar": nunca ha registrado nada.
-// -------------------------------------------------------------
+
 if ($fecha_ultima === null) {
     $estado = "sin_empezar";
     $dias = 0;
@@ -40,7 +30,6 @@ if ($fecha_ultima === null) {
     $dias = 0;
 }
 
-// Rango actual y siguiente según los días que se muestran de verdad
 $rango_actual = $rangos[0]; $rango_siguiente = null;
 foreach ($rangos as $i => $r) {
     if ($dias >= $r["meta"]) { $rango_actual = $r; $rango_siguiente = $rangos[$i + 1] ?? null; }
@@ -53,10 +42,10 @@ if ($rango_siguiente) {
 }
 
 $mensajes_estado = [
-    "al_dia"       => ["texto" => "✅ Ya registraste tu progreso hoy. ¡Vuelve mañana para que la racha siga!", "clase" => "ok"],
-    "en_riesgo"    => ["texto" => "⚠️ Todavía no registras tu progreso de hoy. Si no lo haces antes de medianoche, tu racha se reinicia mañana.", "clase" => "alerta"],
-    "perdida"      => ["texto" => "💔 Tu racha se reinició por falta de actividad. Registra tu progreso hoy para empezar de nuevo.", "clase" => "alerta"],
-    "sin_empezar"  => ["texto" => "🚀 Aún no has empezado tu racha. Registra tu progreso de hoy en Mi Progreso para arrancar.", "clase" => "ok"],
+    "al_dia"       => ["texto" => " Ya registraste tu progreso hoy. ¡Vuelve mañana para que la racha siga!", "clase" => "ok"],
+    "en_riesgo"    => ["texto" => " Todavía no registras tu progreso de hoy. Si no lo haces antes de medianoche, tu racha se reinicia mañana.", "clase" => "alerta"],
+    "perdida"      => ["texto" => " Tu racha se reinició por falta de actividad. Registra tu progreso hoy para empezar de nuevo.", "clase" => "alerta"],
+    "sin_empezar"  => ["texto" => " Aún no has empezado tu racha. Registra tu progreso de hoy en Mi Progreso para arrancar.", "clase" => "ok"],
 ];
 $msg = $mensajes_estado[$estado];
 ?>
@@ -84,12 +73,12 @@ $msg = $mensajes_estado[$estado];
       </div>
       <div class="racha-info-actual">
         <span class="pill" style="font-size:14px; padding:8px 18px;">Rango: <?= htmlspecialchars($rango_actual["nombre"]) ?></span>
-        <h2 style="margin:14px 0 6px; font-size:26px;">🔥 <?= $dias ?> día<?= $dias === 1 ? "" : "s" ?> seguidos</h2>
+        <h2 style="margin:14px 0 6px; font-size:26px;"> <?= $dias ?> día<?= $dias === 1 ? "" : "s" ?> seguidos</h2>
         <p style="font-size:13.5px; color:var(--gris-texto);">
           <?php if ($rango_siguiente): ?>
             Te faltan <strong><?= max(0, $rango_siguiente["meta"] - $dias) ?> días</strong> para llegar a <strong><?= $rango_siguiente["nombre"] ?></strong>.
           <?php else: ?>
-            ¡Llegaste al rango máximo, <strong>Invictus</strong>! 🏆
+            ¡Llegaste al rango máximo, <strong>Invictus</strong>! 
           <?php endif; ?>
         </p>
         <div class="barra-racha">

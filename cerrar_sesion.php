@@ -1,13 +1,7 @@
 <?php
 require_once "config.php";
 
-/**
- * cerrar_sesion.php
- * Destruye la sesión por completo: los datos en el servidor Y la
- * cookie en el navegador. Esto es importante — session_destroy()
- * solo no borra la cookie, así que sin este paso el navegador
- * podría seguir mandando el mismo PHPSESSID de antes.
- */
+
 $_SESSION = [];
 
 if (ini_get("session.use_cookies")) {

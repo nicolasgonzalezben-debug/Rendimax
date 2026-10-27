@@ -7,7 +7,7 @@ $mi_id    = (int)$_SESSION["id_usuario"];
 $es_admin = esAdministrador();
 
 $error = ""; $exito = "";
-$sugeridos = []; // ids de ejercicios sugeridos tras generar
+$sugeridos = []; 
 
 function tipos_para_objetivo($objetivo) {
     if ($objetivo === "Bajar de peso")   return ["Cardio","Fuerza"];
@@ -20,12 +20,7 @@ function series_reps_por_nivel($nivel) {
     return [3, "12"]; // Intermedio
 }
 
-// -----------------------------------------------------------------
-// Texto detallado y accionable que ve el estudiante en Mi Rutina:
-// explica paso a paso cómo ejecutar la rutina completa, no solo
-// "haz tus ejercicios". Se usa al generar automáticamente; si el
-// docente/admin escribe su propia descripción, esa tiene prioridad.
-// -----------------------------------------------------------------
+
 function descripcion_rutina_detallada($nivel, $objetivo, $series, $reps, $cantidad_ejercicios) {
     $descanso_series = $nivel === "Avanzado" ? "45-60" : ($nivel === "Intermedio" ? "60-90" : "90-120");
     $frecuencia = [
@@ -44,12 +39,7 @@ function descripcion_rutina_detallada($nivel, $objetivo, $series, $reps, $cantid
         . "Frecuencia recomendada: $frecuencia. Registra cómo te sentiste en Mi Progreso después de cada sesión.";
 }
 
-// -----------------------------------------------------------------
-// Estudiantes que este usuario puede usar: administrador = todos;
-// docente = todos los de sus grados asignados (asignacion_docente).
-// Se usa tanto para llenar el <select> como para validar en el
-// servidor más abajo.
-// -----------------------------------------------------------------
+
 if ($es_admin) {
     $estudiantes = mysqli_query($conexion, "SELECT id_usuario, nombre FROM usuario WHERE rol='estudiante' ORDER BY nombre");
 } else {
@@ -60,9 +50,7 @@ mysqli_data_seek($estudiantes, 0);
 while ($e = mysqli_fetch_assoc($estudiantes)) { $ids_permitidos[] = (int)$e["id_usuario"]; }
 mysqli_data_seek($estudiantes, 0);
 
-// -----------------------------------------------------------------
-// GENERAR SUGERENCIA (no guarda, solo preselecciona ejercicios)
-// -----------------------------------------------------------------
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["generar"])) {
     $nivel_gen    = $_POST["nivel"] ?? "Principiante";
     $objetivo_gen = $_POST["objetivo"] ?? "Mantenimiento";
@@ -87,9 +75,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST["generar"])) {
     $_POST["descripcion_sugerida"] = descripcion_rutina_detallada($nivel_gen, $objetivo_gen, $series_gen, $reps_gen, count($sugeridos));
 }
 
-// -----------------------------------------------------------------
-// CREAR / ACTUALIZAR (guardado real)
-// -----------------------------------------------------------------
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_POST["generar"])) {
     $id_rutina     = $_POST["id_rutina"] ?? "";
     $nombre_rutina = trim($_POST["nombre_rutina"] ?? "");
@@ -102,8 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_POST["generar"])) {
     $auto          = isset($_POST["fue_generado"]) ? 1 : 0;
     $ejercicios_marcados = $_POST["ejercicios"] ?? [];
 
-    // Igual que en Alimentación: un docente no puede dejar la rutina
-    // como "General" ni asignarla a alguien que no sea suyo.
+    
     $propietario_valido = $es_admin || ($id_usuario_db !== null && in_array($id_usuario_db, $ids_permitidos, true));
 
     if ($nombre_rutina === "" || $duracion === "") {
@@ -112,8 +97,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && !isset($_POST["generar"])) {
         $error = "Solo puedes crear o editar rutinas para tus estudiantes asignados.";
     } else {
         [$series_def, $reps_def] = series_reps_por_nivel($nivel);
-        // Si no escribieron una descripción propia, usamos la detallada
-        // que arma el generador (mejor que dejarla vacía para el estudiante).
+        
         if ($descripcion === "") {
             $descripcion = descripcion_rutina_detallada($nivel, $objetivo ?? "Mantenimiento", $series_def, $reps_def, count($ejercicios_marcados));
         }

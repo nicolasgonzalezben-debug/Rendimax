@@ -1,29 +1,7 @@
 <?php
 require_once "config.php";
 
-/**
- * instalar_admins.php
- * -----------------------------------------------------------------
- * Forma SEGURA y CONTROLADA de crear a los 4 administradores
- * iniciales (los 4 creadores del proyecto). No es el registro
- * público: nadie llega aquí por accidente ni completando un
- * formulario normal.
- *
- * Dos candados de seguridad:
- *   1) CLAVE_INSTALACION: una clave secreta que solo ustedes 4
- *      conocen (cámbienla antes de subir el proyecto a un servidor
- *      real). Sin ella, el formulario ni siquiera procesa nada.
- *   2) Si YA existe un administrador en la base de datos, el script
- *      se niega a crear más — así, aunque alguien encuentre este
- *      archivo después, no puede usarlo para colarse como admin.
- *
- * Después de usarlo UNA vez, bórrenlo del servidor (o al menos
- * cambien la clave). Está pensado para usarse solo en la
- * instalación inicial del proyecto.
- * -----------------------------------------------------------------
- */
 
-// 1) Cambien esta clave por una propia antes de usar el sistema.
 const CLAVE_INSTALACION = "RendiMAX-2026-SoloLosCreadores";
 
 $ya_hay_admins = mysqli_fetch_assoc(

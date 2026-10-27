@@ -30,7 +30,6 @@ if (isset($_GET["error"])) {
   <a href="index.html" class="btn-volver-index">← Volver al inicio</a>
 
   <div class="auth-logo">
-    <img src="img/logo-rendimax.png" alt="RendiMAX">
     <span>Rendi<b>MAX</b></span>
   </div>
 
@@ -57,9 +56,9 @@ if (isset($_GET["error"])) {
         </div>
 
         <div class="campo">
-          <label for="genero">Género</label>
+          <label for="genero">Sexo</label>
           <select id="genero" name="genero" required>
-            <option value="" disabled selected>Género</option>
+            <option value="" disabled selected>Sexo</option>
             <option value="Masculino">Masculino</option>
             <option value="Femenino">Femenino</option>
             <option value="Otro">Otro</option>
@@ -85,8 +84,6 @@ if (isset($_GET["error"])) {
           <label for="grado">Grado</label>
           <select id="grado" name="grado" required>
             <option value="" disabled selected>¿En qué grado estás?</option>
-            <option value="6">Sexto</option>
-            <option value="7">Séptimo</option>
             <option value="8">Octavo</option>
             <option value="9">Noveno</option>
             <option value="10">Décimo</option>

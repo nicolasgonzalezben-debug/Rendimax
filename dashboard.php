@@ -38,9 +38,7 @@ if ($mi_rol === "administrador") {
     mysqli_stmt_bind_param($stmt, "i", $mi_id); mysqli_stmt_execute($stmt);
     $fila_racha = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt)) ?: ["dias_consecutivos" => 0, "fecha_ultima" => null];
 
-    // Mismo cálculo que mi_racha.php: si pasó más de un día sin
-    // registrar progreso, la racha efectiva ya está en 0 aunque la
-    // base de datos todavía no se haya actualizado.
+
     $hoy = date("Y-m-d"); $ayer = date("Y-m-d", strtotime("-1 day"));
     $dias_racha_efectivos = in_array($fila_racha["fecha_ultima"], [$hoy, $ayer], true) ? (int)$fila_racha["dias_consecutivos"] : 0;
     $mi_racha = ["dias_consecutivos" => $dias_racha_efectivos, "nivel_personaje" => nivelParaDias($dias_racha_efectivos)];
@@ -67,7 +65,7 @@ if ($mi_rol === "administrador") {
 
     <div class="panel-encabezado">
       <div>
-        <h1>Hola, <?= htmlspecialchars(explode(" ", $_SESSION["nombre"])[0]) ?> 👋</h1>
+        <h1>Hola, <?= htmlspecialchars(explode(" ", $_SESSION["nombre"])[0]) ?> </h1>
         <p>
           <?php if ($mi_rol === "administrador"): ?>Este es el resumen general de RendiMAX.
           <?php elseif ($mi_rol === "docente"): ?>Este es el resumen de tus estudiantes autorizados.
@@ -87,8 +85,8 @@ if ($mi_rol === "administrador") {
         <div class="resumen-card"><div class="valor"><?= (int)$total_asignados ?></div><div class="etiqueta">Estudiantes a tu cargo</div></div>
         <div class="resumen-card"><div class="valor"><?= (int)$total_grados ?></div><div class="etiqueta">Grados a tu cargo</div></div>
       <?php else: ?>
-        <div class="resumen-card"><div class="valor"><?= htmlspecialchars($mi_racha["nivel_personaje"]) ?></div><div class="etiqueta">Tu rango actual</div></div>
-        <div class="resumen-card"><div class="valor"><?= (int)$mi_racha["dias_consecutivos"] ?></div><div class="etiqueta">Días de racha</div></div>
+        <div class="resumen-card logro"><div class="valor"><?= htmlspecialchars($mi_racha["nivel_personaje"]) ?></div><div class="etiqueta">Tu rango actual</div></div>
+        <div class="resumen-card logro"><div class="valor"><?= (int)$mi_racha["dias_consecutivos"] ?></div><div class="etiqueta">Días de racha</div></div>
         <div class="resumen-card"><div class="valor"><?= (int)$total_planes ?></div><div class="etiqueta">Planes disponibles</div></div>
         <div class="resumen-card"><div class="valor"><?= (int)$total_rutinas ?></div><div class="etiqueta">Rutinas disponibles</div></div>
       <?php endif; ?>
@@ -97,22 +95,22 @@ if ($mi_rol === "administrador") {
     <h2 class="seccion-titulo" style="font-size:19px; margin-bottom:20px;">Gestionar</h2>
     <div class="modulos-grid">
       <?php if ($mi_rol === "administrador"): ?>
-        <div class="modulo-card"><div class="icono">U</div><h3>Usuarios</h3><p>Gestiona cuentas y asigna el rol Estudiante o Docente.</p><a href="usuarios.php">Ir a Usuarios →</a></div>
-        <div class="modulo-card"><div class="icono">📋</div><h3>Asignaciones</h3><p>Decide qué estudiantes puede supervisar cada docente.</p><a href="admin_asignaciones.php">Ir a Asignaciones →</a></div>
-        <div class="modulo-card"><div class="icono">A</div><h3>Planes de Alimentación</h3><p>Genera planes automáticos o créalos manualmente.</p><a href="planes_alimentacion.php">Ir a Alimentación →</a></div>
-        <div class="modulo-card"><div class="icono">R</div><h3>Rutinas de Entrenamiento</h3><p>Genera rutinas automáticas desde el catálogo de ejercicios.</p><a href="rutinas_entrenamiento.php">Ir a Rutinas →</a></div>
-        <div class="modulo-card"><div class="icono">E</div><h3>Ejercicios</h3><p>Crea, edita y elimina el catálogo de ejercicios.</p><a href="ejercicios.php">Ir a Ejercicios →</a></div>
-        <div class="modulo-card"><div class="icono">P</div><h3>Monitoreo de Progreso</h3><p>Consulta la evolución de todos los estudiantes (solo lectura).</p><a href="monitoreo_progreso.php">Ver monitoreo →</a></div>
+        <div class="modulo-card"><h3>Usuarios</h3><p>Gestiona cuentas y asigna el rol Estudiante o Docente.</p><a href="usuarios.php">Ir a Usuarios →</a></div>
+        <div class="modulo-card"><h3>Asignaciones</h3><p>Decide qué estudiantes puede supervisar cada docente.</p><a href="admin_asignaciones.php">Ir a Asignaciones →</a></div>
+        <div class="modulo-card"><h3>Planes de Alimentación</h3><p>Genera planes automáticos o créalos manualmente.</p><a href="planes_alimentacion.php">Ir a Alimentación →</a></div>
+        <div class="modulo-card"><h3>Rutinas de Entrenamiento</h3><p>Genera rutinas automáticas desde el catálogo de ejercicios.</p><a href="rutinas_entrenamiento.php">Ir a Rutinas →</a></div>
+        <div class="modulo-card"><h3>Ejercicios</h3><p>Crea, edita y elimina el catálogo de ejercicios.</p><a href="ejercicios.php">Ir a Ejercicios →</a></div>
+        <div class="modulo-card"><h3>Monitoreo de Progreso</h3><p>Consulta la evolución de todos los estudiantes (solo lectura).</p><a href="monitoreo_progreso.php">Ver monitoreo →</a></div>
       <?php elseif ($mi_rol === "docente"): ?>
-        <div class="modulo-card"><div class="icono">P</div><h3>Mis Estudiantes</h3><p>Consulta el progreso de los estudiantes que tienes autorizados (solo lectura).</p><a href="monitoreo_progreso.php">Ver mis estudiantes →</a></div>
-        <div class="modulo-card"><div class="icono">A</div><h3>Alimentación</h3><p>Crea planes de alimentación para tus estudiantes asignados.</p><a href="planes_alimentacion.php">Ir a Alimentación →</a></div>
-        <div class="modulo-card"><div class="icono">R</div><h3>Rutinas</h3><p>Crea rutinas de entrenamiento para tus estudiantes asignados.</p><a href="rutinas_entrenamiento.php">Ir a Rutinas →</a></div>
+        <div class="modulo-card"><h3>Mis Estudiantes</h3><p>Consulta el progreso de los estudiantes que tienes autorizados (solo lectura).</p><a href="monitoreo_progreso.php">Ver mis estudiantes →</a></div>
+        <div class="modulo-card"><h3>Alimentación</h3><p>Crea planes de alimentación para tus estudiantes asignados.</p><a href="planes_alimentacion.php">Ir a Alimentación →</a></div>
+        <div class="modulo-card"><h3>Rutinas</h3><p>Crea rutinas de entrenamiento para tus estudiantes asignados.</p><a href="rutinas_entrenamiento.php">Ir a Rutinas →</a></div>
       <?php else: ?>
-        <div class="modulo-card"><div class="icono">U</div><h3>Mi Perfil</h3><p>Consulta y edita tus datos personales y tu contraseña.</p><a href="mi_perfil.php">Ir a Mi Perfil →</a></div>
-        <div class="modulo-card"><div class="icono">A</div><h3>Mi Alimentación</h3><p>Consulta el plan que te asignaron.</p><a href="mi_plan.php">Ver mi plan →</a></div>
-        <div class="modulo-card"><div class="icono">R</div><h3>Mi Rutina</h3><p>Consulta la rutina que te asignaron.</p><a href="mi_rutina.php">Ver mi rutina →</a></div>
-        <div class="modulo-card"><div class="icono">P</div><h3>Mi Progreso</h3><p>Registra tu propia evolución de peso en el tiempo.</p><a href="mi_progreso.php">Ir a mi progreso →</a></div>
-        <div class="modulo-card"><div class="icono">🔥</div><h3>Mi Racha</h3><p>Mira tu mascota, tu rango y cuánto falta para el siguiente.</p><a href="mi_racha.php">Ver mi racha →</a></div>
+        <div class="modulo-card"><h3>Mi Perfil</h3><p>Consulta y edita tus datos personales y tu contraseña.</p><a href="mi_perfil.php">Ir a Mi Perfil →</a></div>
+        <div class="modulo-card"><h3>Mi Alimentación</h3><p>Consulta el plan que te asignaron.</p><a href="mi_plan.php">Ver mi plan →</a></div>
+        <div class="modulo-card"><h3>Mi Rutina</h3><p>Consulta la rutina que te asignaron.</p><a href="mi_rutina.php">Ver mi rutina →</a></div>
+        <div class="modulo-card"><h3>Mi Progreso</h3><p>Registra tu propia evolución de peso en el tiempo.</p><a href="mi_progreso.php">Ir a mi progreso →</a></div>
+        <div class="modulo-card"><h3>Mi Racha</h3><p>Mira tu mascota, tu rango y cuánto falta para el siguiente.</p><a href="mi_racha.php">Ver mi racha →</a></div>
       <?php endif; ?>
     </div>
 

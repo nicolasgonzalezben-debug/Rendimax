@@ -62,14 +62,7 @@ if (mysqli_stmt_num_rows($verifica) > 0) {
 
 $contrasena_hash = password_hash($contrasena, PASSWORD_DEFAULT);
 
-// -------------------------------------------------------------
-// REGLA DE SEGURIDAD MÁS IMPORTANTE DE ESTE ARCHIVO:
-// el rol NUNCA sale de $_POST (el formulario de registro ni
-// siquiera tiene un campo para elegirlo). El servidor lo fija
-// aquí mismo, a mano, siempre en "estudiante". No hay excepción
-// ni "primer usuario especial": los administradores se crean
-// aparte, con instalar_admins.php (ver README).
-// -------------------------------------------------------------
+
 $rol = "estudiante";
 
 mysqli_begin_transaction($conexion);
@@ -85,9 +78,7 @@ try {
     mysqli_stmt_bind_param($stmt2, "siiisii", $genero, $edad, $estatura, $peso, $objetivo, $grado, $id_usuario);
     mysqli_stmt_execute($stmt2);
 
-    // Fila inicial de racha en 0: el primer día cuenta cuando el
-    // estudiante registre su primer progreso (ver funciones.php ->
-    // actualizarRacha()), no solo por haberse registrado en el sistema.
+    
     $sql3 = "INSERT INTO racha (dias_consecutivos, fecha_inicio, fecha_ultima, nivel_personaje, id_usuario) VALUES (0, NULL, NULL, 'Bronce', ?)";
     $stmt3 = mysqli_prepare($conexion, $sql3);
     mysqli_stmt_bind_param($stmt3, "i", $id_usuario);

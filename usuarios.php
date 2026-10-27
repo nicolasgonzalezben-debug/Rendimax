@@ -6,11 +6,7 @@ $seccion_activa = "usuarios";
 $error = ""; $exito = "";
 $mi_id = (int)$_SESSION["id_usuario"];
 
-// Roles que un administrador puede asignar desde esta pantalla.
-// "administrador" NUNCA aparece aquí — ni en el <select> del HTML
-// ni en esta lista blanca del servidor, así que aunque alguien
-// manipule el formulario y mande rol=administrador por POST, el
-// servidor lo ignora y usa "estudiante" por defecto.
+
 $ROLES_ASIGNABLES = ["estudiante", "docente"];
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -23,10 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $estatura   = $_POST["estatura"] ?? "";
     $peso       = $_POST["peso"] ?? "";
 
-    // El objetivo y el grado son cosas de ESTUDIANTE (un docente no
-    // tiene objetivo físico ni grado propio). Si el rol elegido es
-    // docente, el servidor ignora lo que haya llegado en esos campos
-    // y los guarda como NULL, sin importar lo que mande el formulario.
+    
     $objetivo   = ($rol === "estudiante") ? ($_POST["objetivo"] ?? "") : null;
     $grado      = ($rol === "estudiante") ? ($_POST["grado"] ?? "") : null;
     $grado_db   = ($grado === "" || $grado === null) ? null : (int)$grado;
@@ -72,9 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 }
             }
         } else {
-            // Blindaje extra: aunque alguien arme una petición a mano con el
-            // id de un administrador, esta consulta solo puede tocar filas
-            // con rol estudiante/docente (nunca administrador).
+            
             mysqli_begin_transaction($conexion);
             $stmt = mysqli_prepare($conexion,
                 "UPDATE usuario SET nombre=?, correo_electronico=?, rol=?
@@ -93,8 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
 if (isset($_GET["eliminar"])) {
     $id = (int)$_GET["eliminar"];
-    // Solo borra si el objetivo NO es administrador (regla: el panel de
-    // usuarios no administra administradores).
+    
     $stmt = mysqli_prepare($conexion, "DELETE FROM usuario WHERE id_usuario = ? AND rol IN ('estudiante','docente')");
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
@@ -114,8 +104,7 @@ if (isset($_GET["editar"])) {
     $usuario_editar = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
 }
 
-// La lista NUNCA muestra cuentas de administrador: este panel es
-// solo para gestionar estudiantes y docentes.
+
 $usuarios = mysqli_query($conexion, "
   SELECT u.*, p.sexo, p.edad, p.estatura, p.peso, p.objetivo, p.grado, r.dias_consecutivos, r.nivel_personaje
   FROM usuario u
@@ -199,10 +188,7 @@ $usuarios = mysqli_query($conexion, "
     </div>
 
     <script>
-      // El objetivo y el grado son solo de estudiante. Esto es nada
-      // más una comodidad visual (ocultar/mostrar el campo); la
-      // validación real, la que importa de verdad, ya la hace el
-      // servidor en usuarios.php sin confiar en lo que mande el navegador.
+      
       function actualizarCamposPorRol() {
         var esEstudiante = document.getElementById("campo-rol").value === "estudiante";
         document.querySelectorAll(".campo-solo-estudiante").forEach(function (campo) {
@@ -231,7 +217,7 @@ $usuarios = mysqli_query($conexion, "
                 <td><?php if ($u["rol"] === "estudiante"): ?>
                       <?= htmlspecialchars($u["objetivo"] ?? "—") ?><?= $u["grado"] ? " · " . (int)$u["grado"] . "°" : "" ?>
                     <?php else: ?>—<?php endif; ?></td>
-                <td><?php if ($u["rol"] === "estudiante"): ?><span class="pill"><?= htmlspecialchars($u["nivel_personaje"] ?? "Bronce") ?></span><?php else: ?>—<?php endif; ?></td>
+                <td><?php if ($u["rol"] === "estudiante"): ?><span class="pill logro"><?= htmlspecialchars($u["nivel_personaje"] ?? "Bronce") ?></span><?php else: ?>—<?php endif; ?></td>
                 <td><?= $u["rol"] === "estudiante" ? (int)($u["dias_consecutivos"] ?? 0) . " días" : "—" ?></td>
                 <td class="acciones-tabla">
                   <a class="editar" href="usuarios.php?editar=<?= $u['id_usuario'] ?>">Editar</a>

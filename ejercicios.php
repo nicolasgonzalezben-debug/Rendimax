@@ -1,10 +1,16 @@
 <?php
 require_once "config.php";
-exigirRol("administrador");
+exigirRol(["docente", "administrador"]);
 $seccion_activa = "ejercicios";
 
 $error = ""; $exito = "";
-$mi_id = (int)$_SESSION["id_usuario"];
+$mi_id    = (int)$_SESSION["id_usuario"];
+$es_admin = esAdministrador();
+
+
+function puedeEditarEjercicio($ejercicio, $esAdmin, $miId) {
+    return $esAdmin || (int)$ejercicio["id_usuario"] === (int)$miId;
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $id_ejercicio  = $_POST["id_ejercicio"] ?? "";
@@ -22,16 +28,35 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         mysqli_stmt_execute($stmt);
         $exito = "Ejercicio creado correctamente.";
     } else {
-        $sql = "UPDATE ejercicios SET nombre=?, tipo=?, instrucciones=?, descripcion=? WHERE id_ejercicio=?";
-        $stmt = mysqli_prepare($conexion, $sql);
-        mysqli_stmt_bind_param($stmt, "ssssi", $nombre, $tipo, $instrucciones, $descripcion, $id_ejercicio);
-        mysqli_stmt_execute($stmt);
-        $exito = "Ejercicio actualizado correctamente.";
+       
+        $stmt0 = mysqli_prepare($conexion, "SELECT id_usuario FROM ejercicios WHERE id_ejercicio = ?");
+        mysqli_stmt_bind_param($stmt0, "i", $id_ejercicio);
+        mysqli_stmt_execute($stmt0);
+        $fila0 = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt0));
+
+        if (!$fila0 || !puedeEditarEjercicio($fila0, $es_admin, $mi_id)) {
+            $error = "Solo puedes editar los ejercicios que tú mismo creaste.";
+        } else {
+            $sql = "UPDATE ejercicios SET nombre=?, tipo=?, instrucciones=?, descripcion=? WHERE id_ejercicio=?";
+            $stmt = mysqli_prepare($conexion, $sql);
+            mysqli_stmt_bind_param($stmt, "ssssi", $nombre, $tipo, $instrucciones, $descripcion, $id_ejercicio);
+            mysqli_stmt_execute($stmt);
+            $exito = "Ejercicio actualizado correctamente.";
+        }
     }
 }
 
 if (isset($_GET["eliminar"])) {
     $id = (int)$_GET["eliminar"];
+    $stmt0 = mysqli_prepare($conexion, "SELECT id_usuario FROM ejercicios WHERE id_ejercicio = ?");
+    mysqli_stmt_bind_param($stmt0, "i", $id);
+    mysqli_stmt_execute($stmt0);
+    $fila0 = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt0));
+
+    if (!$fila0 || !puedeEditarEjercicio($fila0, $es_admin, $mi_id)) {
+        header("Location: ejercicios.php?sinpermiso=1");
+        exit;
+    }
     $stmt = mysqli_prepare($conexion, "DELETE FROM ejercicios WHERE id_ejercicio = ?");
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
@@ -39,6 +64,7 @@ if (isset($_GET["eliminar"])) {
     exit;
 }
 if (isset($_GET["eliminado"])) { $exito = "Ejercicio eliminado correctamente."; }
+if (isset($_GET["sinpermiso"])) { $error = "Solo puedes eliminar los ejercicios que tú mismo creaste."; }
 
 $ejercicio_editar = null;
 if (isset($_GET["editar"])) {
@@ -46,10 +72,19 @@ if (isset($_GET["editar"])) {
     $stmt = mysqli_prepare($conexion, "SELECT * FROM ejercicios WHERE id_ejercicio = ?");
     mysqli_stmt_bind_param($stmt, "i", $id);
     mysqli_stmt_execute($stmt);
-    $ejercicio_editar = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    $fila = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+    if ($fila && puedeEditarEjercicio($fila, $es_admin, $mi_id)) {
+        $ejercicio_editar = $fila;
+    } else {
+        $error = "Solo puedes editar los ejercicios que tú mismo creaste.";
+    }
 }
 
-$ejercicios = mysqli_query($conexion, "SELECT * FROM ejercicios ORDER BY tipo, nombre");
+$ejercicios = mysqli_query($conexion, "
+    SELECT e.*, u.nombre AS nombre_creador
+    FROM ejercicios e
+    JOIN usuario u ON u.id_usuario = e.id_usuario
+    ORDER BY e.tipo, e.nombre");
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -66,7 +101,9 @@ $ejercicios = mysqli_query($conexion, "SELECT * FROM ejercicios ORDER BY tipo, n
 <main class="panel-main">
   <div class="container">
     <div class="panel-encabezado">
-      <div><h1>Ejercicios</h1><p>Catálogo de ejercicios usado por el generador automático de rutinas.</p></div>
+      <div><h1>Ejercicios</h1><p><?= $es_admin
+        ? "Catálogo de ejercicios usado por el generador automático de rutinas."
+        : "Aporta ejercicios al catálogo compartido. Puedes editar o eliminar únicamente los que tú creaste." ?></p></div>
     </div>
 
     <?php if ($error): ?><div class="mensaje error"><?= htmlspecialchars($error) ?></div><?php endif; ?>

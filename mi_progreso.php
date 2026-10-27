@@ -20,8 +20,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         mysqli_stmt_bind_param($stmt, "sissi", $fecha, $peso, $tiempo, $rutinas_c, $mi_id);
         mysqli_stmt_execute($stmt);
 
-        // La racha SOLO avanza cuando registras el progreso del día de
-        // HOY (no sirve registrar una fecha pasada para "inflarla").
         if ($fecha === date("Y-m-d")) {
             actualizarRacha($conexion, $mi_id);
         }
@@ -72,7 +70,7 @@ $registros = mysqli_stmt_get_result($stmt);
 
 <main class="panel-main">
   <div class="container">
-    <div class="panel-encabezado"><div><h1>Mi Progreso</h1><p>Registra tu propia evolución. Tu profesor puede verlo, pero no editarlo por ti. 🔥 Registrar tu progreso de <strong>hoy</strong> suma un día a tu racha — mira <a href="mi_racha.php">Mi Racha</a>.</p></div></div>
+    <div class="panel-encabezado"><div><h1>Mi Progreso</h1><p>Registra tu propia evolución. Tu profesor puede verlo, pero no editarlo por ti.  Registrar tu progreso de <strong>hoy</strong> suma un día a tu racha — mira <a href="mi_racha.php">Mi Racha</a>.</p></div></div>
 
     <?php if ($error): ?><div class="mensaje error"><?= htmlspecialchars($error) ?></div><?php endif; ?>
     <?php if ($exito): ?><div class="mensaje exito"><?= htmlspecialchars($exito) ?></div><?php endif; ?>

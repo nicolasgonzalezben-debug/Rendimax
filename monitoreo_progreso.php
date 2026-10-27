@@ -6,12 +6,7 @@ $seccion_activa = "progreso";
 $mi_id = (int)$_SESSION["id_usuario"];
 $id_ver = isset($_GET["ver"]) ? (int)$_GET["ver"] : null;
 
-// -------------------------------------------------------------
-// Un docente SOLO ve a los estudiantes que un administrador le
-// autorizó en asignacion_docente. Un administrador ve a todos.
-// Este filtro se aplica en el SQL (servidor), no se puede saltar
-// escribiendo la URL con otro id.
-// -------------------------------------------------------------
+
 if (esAdministrador()) {
     $resumen = mysqli_query($conexion, "
       SELECT u.id_usuario, u.nombre, r.dias_consecutivos, r.nivel_personaje,
@@ -23,8 +18,6 @@ if (esAdministrador()) {
       WHERE u.rol = 'estudiante'
       ORDER BY u.nombre");
 } else {
-    // Un docente ve a TODOS los estudiantes de los grados que tiene
-    // autorizados en asignacion_docente (no estudiante por estudiante).
     $stmt = mysqli_prepare($conexion, "
       SELECT DISTINCT u.id_usuario, u.nombre, p.grado, r.dias_consecutivos, r.nivel_personaje,
         (SELECT COUNT(*) FROM progreso pr WHERE pr.id_usuario = u.id_usuario) AS total_registros,
@@ -43,9 +36,7 @@ if (esAdministrador()) {
 
 $detalle_nombre = ""; $detalle = null;
 if ($id_ver) {
-    // Si es docente, comprobamos que ESE estudiante sea suyo antes de
-    // mostrarle nada. Así, aunque escriba ?ver=99 a mano en la URL con
-    // el id de un estudiante que no le corresponde, no ve nada.
+
     $autorizado = esAdministrador() || esDocenteDeEstudiante($conexion, $mi_id, $id_ver);
 
     if ($autorizado) {
@@ -60,7 +51,7 @@ if ($id_ver) {
         mysqli_stmt_execute($stmt2);
         $detalle = mysqli_stmt_get_result($stmt2);
     } else {
-        $id_ver = null; // no autorizado: se ignora el parámetro por completo
+        $id_ver = null; 
     }
 }
 ?>
@@ -95,7 +86,7 @@ if ($id_ver) {
               <tr>
                 <td><?= htmlspecialchars($u["nombre"]) ?></td>
                 <?php if (esDocente()): ?><td><?= (int)$u["grado"] ?>°</td><?php endif; ?>
-                <td><span class="pill"><?= htmlspecialchars($u["nivel_personaje"] ?? "Bronce") ?></span></td>
+                <td><span class="pill logro"><?= htmlspecialchars($u["nivel_personaje"] ?? "Bronce") ?></span></td>
                 <td><?= (int)($u["dias_consecutivos"] ?? 0) ?> días</td>
                 <td><?= (int)$u["total_registros"] ?></td>
                 <td><?= $u["ultimo_peso"] ? htmlspecialchars($u["ultimo_peso"]) . " kg" : "—" ?></td>
